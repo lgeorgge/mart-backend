@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Models
+
+// User model
+model User {
+  id    String     @id @default(uuid()) @db.Uuid
+  email String     @unique
+  name  String?
+  cart  CartItem[]
+  role  Role       @default(USER)
+
+  orders Order[]
+}
+
+// User Role
+enum Role {
+  ADMIN
+  USER
+  DELIVERY
+}
+
+// Category 
+model Category {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+
+  // if there are levels for categories
+  parentCategoryId String?    @db.Uuid
+  parentCategory   Category?  @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id], onDelete: SetNull)
+  categories       Category[] @relation("CategoryHierarchy")
+
+  // products in this category
+  products Product[]
+}
+
+model Product {
+  id                String     @id @default(uuid()) @db.Uuid
+  name              String
+  description       String?
+  price             Float
+  categoryId        String
+  availableQuantity Int        @default(100)
+  category          Category   @relation(fields: [categoryId], references: [id])
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  cartItems         CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id])
+  productId String   @db.Uuid
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int      @default(1)
+  orderId   String   @db.Uuid
+  order     Order    @relation(fields: [orderId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id          String      @id @default(uuid()) @db.Uuid
+  userId      String      @db.Uuid
+  user        User        @relation(fields: [userId], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  total       Float       @default(0.0)
+  status      OrderStatus @default(PENDING)
+  deliveredAt DateTime?
+
+  cartItems CartItem[]
+}
+
+enum OrderStatus {
+  PENDING
+  SHIPPED
+  DELIVERED
+}
