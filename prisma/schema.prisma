@@ -5,7 +5,6 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -16,11 +15,12 @@ datasource db {
 
 // User model
 model User {
-  id    String     @id @default(uuid()) @db.Uuid
-  email String     @unique
-  name  String?
-  cart  CartItem[]
-  role  Role       @default(USER)
+  id             String     @id @default(uuid()) @db.Uuid
+  email          String     @unique
+  name           String?
+  hashedPassword String
+  cart           CartItem[]
+  role           Role       @default(USER)
 
   orders Order[]
 }
@@ -51,7 +51,7 @@ model Product {
   name              String
   description       String?
   price             Float
-  categoryId        String
+  categoryId        String     @db.Uuid
   availableQuantity Int        @default(100)
   category          Category   @relation(fields: [categoryId], references: [id])
   createdAt         DateTime   @default(now())
