@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SignUpDto } from './dto/user-signup.dto';
@@ -23,6 +24,10 @@ export class UserService {
     });
     if (existingUser) {
       throw new ConflictException('Email already exists');
+    }
+
+    if (!email || !password) {
+      throw new BadRequestException('Email and password are required');
     }
     // Hash password
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access

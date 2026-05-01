@@ -35,8 +35,8 @@ export class ProductService {
     }
     if (minPrice !== undefined || maxPrice !== undefined) {
       where.price = {
-        gte: minPrice,
-        lte: maxPrice,
+        gte: Number(minPrice),
+        lte: Number(maxPrice),
       };
     }
 
