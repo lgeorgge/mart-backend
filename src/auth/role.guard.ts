@@ -19,12 +19,32 @@ export class RolesGuard implements CanActivate {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const request = context.switchToHttp().getRequest();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const userRole = request.headers['x-role'];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const userRole = request.headers['x-role'] as string;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const userId = request.headers['x-user-id'] as string;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const userEmail = request.headers['x-user-email'] as string;
 
     if (!userRole) {
       throw new UnauthorizedException('No role provided in headers (x-role)');
     }
+
+    if (!userId || !userEmail) {
+      throw new UnauthorizedException(
+        'Missing user id or email in headers (x-user-id, x-user-email)',
+      );
+    }
+
+    // Attach user object to request
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    request.user = {
+      id: userId,
+      email: userEmail,
+      role: userRole,
+    };
+
+    if (requiredRoles.length === 0) return true;
 
     return requiredRoles.includes(userRole);
   }
